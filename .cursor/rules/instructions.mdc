@@ -1,0 +1,27 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Je souhaite une solution simple et bien structurée pour le challenge Kaggle **M5 Forecasting - Accuracy**.
+
+Voici les consignes :
+
+• Le script doit être un fichier `.py`, structuré en **cellules exécutables** avec la syntaxe `# %%` (comme dans un notebook compatible VS Code ou Jupyter).
+• Chaque étape du pipeline doit être clairement délimitée par une cellule :
+    - Imports
+    - Chargement et filtrage des données (1 seul état, ex : CA)
+    - Transformation du format wide vers long
+    - Ajout des données calendaires
+    - Feature engineering (lags, moyennes mobiles, date parts)
+    - Encodage des features catégorielles
+    - Split train / validation (ex : derniers 28 jours)
+    - Entraînement d’un modèle LightGBM avec `objective='poisson'`
+    - Évaluation avec RMSE
+    - Affichage des importances et d'une courbe de prédiction
+
+• Le code doit être simple, autonome, propre, commenté.
+• Pas de deep learning, pas de cat2vec ni de multioutput.
+• Optionnel : affichage d'une prédiction sur 1 produit en fin de script.
+
+Génère un **script Python complet prêt à être exécuté**, pédagogique et lisible, comme un notebook .ipynb mais au format `.py`.
