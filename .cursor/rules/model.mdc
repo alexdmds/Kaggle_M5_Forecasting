@@ -1,0 +1,55 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Tu es un assistant Python expert en séries temporelles, Kaggle et optimisation mémoire.
+Génère un code d’entraînement clair, modulaire et efficace pour le challenge Kaggle M5 Forecasting - Accuracy, en suivant les consignes suivantes :
+
+⸻
+
+🧱 🔧 Structure générale attendue du pipeline
+	1.	Chargement des données
+	•	Charger les fichiers : sales_train_validation.csv, calendar.csv, sell_prices.csv
+	•	Convertir les colonnes au format category quand pertinent
+	•	Appliquer une réduction de mémoire : conversion explicite des types (int16, float32, etc.)
+	•	Transformer les données de ventes de format large à long (pd.melt sur d_1 à d_1913)
+	2.	Fusion des sources
+	•	Fusionner les ventes avec calendar (via d), et avec sell_prices (via store_id, item_id, wm_yr_wk)
+	3.	Feature engineering
+	•	Pour chaque ligne (produit, magasin, date), créer :
+	•	Lags : lag_28, lag_56, éventuellement lag_84
+	•	Rolling windows : rolling_mean_7, rolling_std_28, rolling_max_7, etc.
+	•	Features calendaires : weekday, month, event_name_1, snap_CA, etc.
+	•	Prix : sell_price, price_change_from_7d, rolling_mean_price_28
+	•	Colonne horizon (de 1 à 28) = nombre de jours dans le futur pour la prédiction
+	•	(Optionnel) Indicateurs de lancement du produit (date de début des ventes)
+	4.	Création du dataset d’entraînement
+	•	Pour chaque série (id), générer des exemples (t, h) où la target = ventes à t+h, et les features sont ceux disponibles à t
+	•	Filtrer les lignes trop anciennes ou trop éloignées si nécessaire
+	•	Utiliser seulement les 2 à 3 dernières années de données (limiter l’historique pour garder les patterns récents et réduire le volume)
+	•	Supprimer les lignes avec NaN dans les lags/rolling
+	5.	Validation
+	•	Split temporel : utiliser les jours d_1886 à d_1913 comme validation set (correspondant à l’horizon de 28 jours)
+	•	(Optionnel) Validation croisée glissante sur plusieurs périodes (ex: TimeSeriesSplit)
+	6.	Modèle LightGBM
+	•	Utiliser un modèle LightGBM Regressor
+	•	Configuration :
+	•	objective='tweedie' ou 'poisson'
+	•	tweedie_variance_power=1.2
+	•	num_leaves, max_depth, min_data_in_leaf, learning_rate, etc.
+	•	Early stopping sur un score RMSE
+	•	Afficher l’importance des features après entraînement
+	•	Sauvegarder le modèle (optionnel)
+	7.	Logging / Monitoring
+	•	Afficher les métriques de validation : RMSE, WRMSSE si implémenté
+	•	Logguer les hyperparamètres utilisés
+
+⸻
+
+⚠️ Contraintes et bonnes pratiques
+	•	Code en Python 3, avec Pandas, LightGBM, NumPy
+	•	Suivre une structure modulaire (fonctions séparées : chargement, feature engineering, entraînement)
+	•	Ajouter des commentaires clairs pour chaque étape
+	•	Optimiser l’usage mémoire et CPU : éviter les copies inutiles, prioriser merge plutôt que join
+	•	Ne pas coder la partie prédiction ici (elle sera gérée plus tard, avec récursivité)

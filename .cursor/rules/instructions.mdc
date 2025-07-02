@@ -3,25 +3,34 @@ description:
 globs: 
 alwaysApply: true
 ---
-Je souhaite une solution simple et bien structurée pour le challenge Kaggle **M5 Forecasting - Accuracy**.
+Tu es un assistant expert en séries temporelles et Machine Learning. Tu aides à construire un pipeline LightGBM pour le challenge Kaggle M5 Forecasting – Accuracy.
 
-Voici les consignes :
+⚙️ Objectif général : prédire les ventes journalières de chaque produit pour les 28 jours à venir, à partir de données historiques (sales_train_validation.csv, calendar.csv, sell_prices.csv).
 
-• Le script doit être un fichier `.py`, structuré en **cellules exécutables** avec la syntaxe `# %%` (comme dans un notebook compatible VS Code ou Jupyter).
-• Chaque étape du pipeline doit être clairement délimitée par une cellule :
-    - Imports
-    - Chargement et filtrage des données (1 seul état, ex : CA)
-    - Transformation du format wide vers long
-    - Ajout des données calendaires
-    - Feature engineering (lags, moyennes mobiles, date parts)
-    - Encodage des features catégorielles
-    - Split train / validation (ex : derniers 28 jours)
-    - Entraînement d’un modèle LightGBM avec `objective='poisson'`
-    - Évaluation avec RMSE
-    - Affichage des importances et d'une courbe de prédiction
+📈 Approche choisie :
+• Utiliser un seul modèle LightGBM de régression.
+• Entraîner ce modèle sur un dataset empilé avec une colonne horizon (valeurs de 1 à 28) représentant le nombre de jours dans le futur à prédire.
+• Ajouter les colonnes explicatives suivantes :
+  – Identifiants catégoriels (item_id, store_id, dept_id, cat_id)
+  – Variables calendaires (weekday, month, event_name, snap, etc.)
+  – Prix (sell_price, price_change, rolling_mean_price)
+  – Ventes décalées (lag_28, lag_56, etc.)
+  – Moyennes mobiles (rolling_mean_7, rolling_std_28, etc.)
+  – Colonne horizon explicitement incluse comme feature
 
-• Le code doit être simple, autonome, propre, commenté.
-• Pas de deep learning, pas de cat2vec ni de multioutput.
-• Optionnel : affichage d'une prédiction sur 1 produit en fin de script.
+🧪 Dataset d’entraînement :
+• Pour chaque série (item_id, store_id), générer une ligne pour chaque date d’entraînement t, et chaque horizon h ∈ [1..28], avec target = ventes à t+h.
+• Toutes les features sont calculées à la date t (les ventes à t+h ne sont connues qu’à l’entraînement).
 
-Génère un **script Python complet prêt à être exécuté**, pédagogique et lisible, comme un notebook .ipynb mais au format `.py`.
+🔄 Prédiction (inférence) :
+• À la date t = d_1913, on prédit les ventes pour les jours d_1914 à d_1941 récursivement :
+  – On commence par prédire J+1 avec les lags connus (jusqu’à J-1)
+  – Puis on met à jour les features (lags et moyennes) avec la valeur prédite
+  – Et on répète pour J+2, …, J+28
+
+💡 Consignes supplémentaires :
+– LightGBM doit être configuré pour un objectif de régression (objective='tweedie' recommandé)
+– Gérer correctement les types (astype('category'))
+– Validation par période glissante (ex: train jusqu’à d_1885, val de d_1886 à d_1913)
+– Prioriser la clarté du code et la modularité (fonction pour features, entraînement, prédiction)
+– Si possible, intégrer un export des prédictions au format sample_submission.csv
